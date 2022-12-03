@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+def rucksack_overlap(rucksack)
+  left = rucksack[...rucksack.length/2]
+  right = rucksack[rucksack.length/2..]
+  left.chars.intersection right.chars
+end
+
+def item_priority(item)
+  b = item.bytes.first
+  b > 90 ? b - 96 : b - 38
+end
+
+# input = File.read("data/in_example1.txt")
+input = File.read("data/in.txt")
+
+rucksacks = input.split("\n")
+
+priorities_sum = rucksacks
+                  .map { |r| rucksack_overlap r }
+                  .reduce(0) { |acc, elem| acc + elem.map { |o| item_priority o }.sum }
+
+puts "Solution part 1: #{priorities_sum}"
+
+def multi_rucksack_overlap(rucksacks)
+  common = rucksacks[0].chars
+  rucksacks[1..].each do |rucksack|
+    common = common.intersection rucksack.chars
+  end
+  common
+end
+
+elven_groups = rucksacks.each.with_index.reduce([]) do |acc, (rucksack, i)| 
+  group = i/3
+  if acc[group]
+    acc[group].push rucksack
+  else
+    acc.push [rucksack]
+  end
+  acc
+end
+
+common_badges = elven_groups.map { |group| multi_rucksack_overlap group }
+# puts "common_badges: #{common_badges}"
+badge_priorities_sum = common_badges.reduce(0) { |acc, elem| acc + elem.map { |o| item_priority o }.sum }
+
+puts "Solution part 2: #{badge_priorities_sum}"
