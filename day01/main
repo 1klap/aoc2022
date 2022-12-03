@@ -1,0 +1,13 @@
+#! /usr/bin/ruby
+
+# input = File.read("data/in_example1.txt")
+input = File.read("data/in.txt")
+
+calories = input
+              .split("\n\n")
+              .map { |group| group.split("\n").map(&:to_i).sum }
+              .sort
+              .reverse
+
+puts calories.take 1
+puts calories.take(3).sum
