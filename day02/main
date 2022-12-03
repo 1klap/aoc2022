@@ -1,0 +1,85 @@
+#! /usr/bin/ruby
+
+Round = Struct.new :opp, :own, keyword_init: true
+
+def eval_round(round)
+  case round.opp
+  when "A"
+    case round.own
+    when "X"
+      4
+    when "Y"
+      8
+    when "Z"
+      3
+    end
+  when "B"
+    case round.own
+    when "X"
+      1
+    when "Y"
+      5
+    when "Z"
+      9
+    end
+  when "C"
+    case round.own
+    when "X"
+      7
+    when "Y"
+      2
+    when "Z"
+      6
+    end
+  end
+end
+
+def eval_round_part2(round)
+  case round.opp
+  when "A"
+    case round.own
+    when "X"
+      3
+    when "Y"
+      4
+    when "Z"
+      8
+    end
+  when "B"
+    case round.own
+    when "X"
+      1
+    when "Y"
+      5
+    when "Z"
+      9
+    end
+  when "C"
+    case round.own
+    when "X"
+      2
+    when "Y"
+      6
+    when "Z"
+      7
+    end
+  end
+end
+
+# input = File.read("data/in_example1.txt")
+input = File.read("data/in.txt")
+
+rounds = input
+            .split("\n")
+            .map { |round| 
+              s = round.split " "
+              Round.new opp: s[0], own: s[1] 
+            }
+
+sum = rounds.reduce(0) { |acc, elem| acc + eval_round(elem) }
+puts "Solution Part 1: #{sum}"
+
+sum = rounds.reduce(0) { |acc, elem| acc + eval_round_part2(elem) }
+puts "Solution Part 2: #{sum}"
+
+# puts eval_round rounds.first
