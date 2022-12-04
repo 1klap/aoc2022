@@ -32,11 +32,7 @@ end
 
 elven_groups = rucksacks.each.with_index.reduce([]) do |acc, (rucksack, i)| 
   group = i/3
-  if acc[group]
-    acc[group].push rucksack
-  else
-    acc.push [rucksack]
-  end
+  acc[group] ? acc[group].push(rucksack) : acc.push([rucksack])
   acc
 end
 
