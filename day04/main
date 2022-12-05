@@ -1,0 +1,42 @@
+#! /usr/bin/ruby
+# frozen_string_literal: true
+
+def range_included?(range_pair)
+  left_includes_right = range_pair.left.include?(range_pair.right.begin) &&
+                        range_pair.left.include?(range_pair.right.end)
+  right_includes_left = range_pair.right.include?(range_pair.left.begin) &&
+                        range_pair.right.include?(range_pair.left.end)
+  left_includes_right || right_includes_left
+end
+
+def range_overlap?(range_pair)
+  left = range_pair.left
+  right = range_pair.right
+  left_overlap_begin = (left.begin <= right.end) &&  (left.begin >= right.begin)
+  left_overlap_end = (left.end <= right.end) && (left.end >= right.begin)
+  right_overlap_begin = (right.begin <= left.end) && (right.begin >= left.begin)
+  right_overlap_end = (right.end <= left.end) && (right.end >= left.begin)
+  left_overlap_begin || left_overlap_end || right_overlap_begin || right_overlap_end
+end
+
+RangePair = Struct.new :left, :right, keyword_init: true
+
+# input = File.read('data/in_example1.txt')
+input = File.read("data/in.txt")
+
+range_pairs = input
+              .split("\n")
+              .map do |line|
+                split = line.split ','
+                left_split = split[0].split '-'
+                right_split = split[1].split '-'
+                RangePair.new(
+                  left: (left_split[0].to_i)..(left_split[1].to_i),
+                  right: (right_split[0].to_i)..(right_split[1].to_i)
+                )
+              end
+overlap_count = range_pairs.select { |pair| range_included? pair }.count
+puts "Solution part 1: #{overlap_count}"
+
+partial_overlap_count = range_pairs.select { |pair| range_overlap? pair }.count
+puts "Solution part 2: #{partial_overlap_count}"
