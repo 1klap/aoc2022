@@ -1,0 +1,63 @@
+#! /usr/bin/ruby
+# frozen_string_literal: true
+
+def apply_movements(stacks, m)
+  m.amount.times do
+    crate = stacks[m.from].delete_at(0)
+    stacks[m.to].prepend crate
+  end
+end
+
+def apply_movements_9001(stacks, m)
+  crates = stacks[m.from].slice! 0, m.amount
+  stacks[m.to] = crates + stacks[m.to]
+end
+
+def init_stack(crate_map, stack_numbers)
+  stacks = {}
+  stack_numbers.chars.each_with_index do |c, i|
+    next if c == ' '
+
+    c = c.to_i
+    stacks[c] = []
+    crate_map.each do |crate_line|
+      stacks[c].push crate_line[i] if crate_line[i] != ' '
+    end
+  end
+  stacks
+end
+
+CrateMovement = Struct.new :amount, :from, :to, keyword_init: true
+
+# input = File.read('data/in_example1.txt')
+input = File.read('data/in.txt')
+
+s = input.split("\n\n")
+cargo_map = s[0]
+instructions = s[1].split "\n"
+ss = cargo_map.split "\n"
+crate_map = ss[0..-2]
+stack_numbers = ss[-1]
+
+stacks = init_stack(crate_map, stack_numbers)
+
+movements = instructions.map do |i|
+  match = i.match(/move (\d*) from (\d*) to (\d*)/)
+  CrateMovement.new amount: match[1].to_i, from: match[2].to_i, to: match[3].to_i
+end
+
+movements.each do |movement|
+  apply_movements stacks, movement
+end
+
+top_crates = stacks.values.map(&:first).join
+puts "Solution part 1: #{top_crates}"
+
+stacks = init_stack(crate_map, stack_numbers)
+
+movements.each do |movement|
+  apply_movements_9001 stacks, movement
+end
+
+top_crates = stacks.values.map(&:first).join
+puts "Solution part 2: #{top_crates}"

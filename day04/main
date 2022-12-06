@@ -12,7 +12,7 @@ end
 def range_overlap?(range_pair)
   left = range_pair.left
   right = range_pair.right
-  left_overlap_begin = (left.begin <= right.end) &&  (left.begin >= right.begin)
+  left_overlap_begin = (left.begin <= right.end) && (left.begin >= right.begin)
   left_overlap_end = (left.end <= right.end) && (left.end >= right.begin)
   right_overlap_begin = (right.begin <= left.end) && (right.begin >= left.begin)
   right_overlap_end = (right.end <= left.end) && (right.end >= left.begin)
@@ -22,7 +22,7 @@ end
 RangePair = Struct.new :left, :right, keyword_init: true
 
 # input = File.read('data/in_example1.txt')
-input = File.read("data/in.txt")
+input = File.read('data/in.txt')
 
 range_pairs = input
               .split("\n")
