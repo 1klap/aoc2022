@@ -1,0 +1,22 @@
+#! /usr/bin/ruby
+# frozen_string_literal: true
+
+require 'set'
+
+# input = File.read('data/in_example4.txt')
+input = File.read('data/in.txt')
+
+def signal_offset(input, req_length)
+  for i in (req_length - 1)..input.size do
+    signal = input.slice(i - (req_length - 1), req_length)
+    unique_letters = Set.new signal.chars
+    return i + 1 if unique_letters.size > (req_length - 1)
+  end
+  return -1
+end
+
+signal_length = signal_offset input, 4
+puts "Solution part 1: #{signal_length}"
+
+message_length = signal_offset input, 14
+puts "Solution part 2: #{message_length}"
