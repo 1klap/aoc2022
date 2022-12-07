@@ -1,0 +1,91 @@
+#! /usr/bin/ruby
+# frozen_string_literal: true
+
+DirNode = Struct.new :parent, :name, :dir?, :files, :totalsize, keyword_init: true
+Cmd = Struct.new :cmd, :args, keyword_init: true
+
+def parse_commands(line)
+  split = line.split ' '
+  case split[1]
+  when 'ls'
+    Cmd.new cmd: :ls
+  when 'cd'
+    Cmd.new cmd: :cd, args: split[2..split.length]
+  end
+end
+
+def update_totalsize(node)
+  return unless node.dir?
+
+  node.files.each do |n|
+    update_totalsize n
+  end
+  node.totalsize = node.files.map(&:totalsize).sum
+end
+
+def subdirs(dir)
+  d = []
+  if dir.dir?
+    d << dir
+    dir.files.each do |file|
+      d += subdirs file
+    end
+  end
+  d
+end
+
+# input = File.read('data/in_example1.txt')
+input = File.read('data/in.txt')
+
+root = DirNode.new parent: nil, name: '/', dir?: true, files: []
+curr_node = root
+input.split("\n").each do |line|
+  # puts line
+  if line.start_with? '$'
+    cmd = parse_commands line
+    # execute if it is cd
+    if cmd.cmd == :cd
+      curr_node = case cmd.args.first
+                  when '..'
+                    curr_node.parent
+                  when '/'
+                    root
+                  else
+                    curr_node.files.find { |node| node.name == cmd.args.first }
+                  end
+    end
+  else
+    # We are in a ls of the current node
+    s = line.split ' '
+    n = case s[0]
+        when 'dir'
+          DirNode.new parent: curr_node, name: s[1], dir?: true, files: []
+        else
+          DirNode.new parent: curr_node, name: s[1], dir?: false, files: nil, totalsize: s[0].to_i
+        end
+    curr_node.files.push n
+  end
+end
+
+update_totalsize root
+
+dirs = subdirs root
+# dirs.each do |dir|
+#   puts "dir: #{dir.name} size: #{dir.totalsize}"
+# end
+
+sol1 = dirs.select { |dir| dir.totalsize <= 100_000 }.map(&:totalsize).sum
+puts "Solution part 1: #{sol1}"
+
+total_space = 70_000_000
+target_space = 30_000_000
+used_space = root.totalsize
+required_space = target_space - (total_space - used_space)
+puts "used_space: #{used_space}"
+puts "required_space: #{required_space}"
+
+dirs.sort_by!(&:totalsize)
+# puts dirs.map(&:totalsize)
+dir_to_delete = dirs.find { |dir| dir.totalsize > required_space }
+sol2 = dir_to_delete.totalsize
+puts "Solution part 2: #{sol2}"
