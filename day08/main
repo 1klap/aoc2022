@@ -1,0 +1,112 @@
+#! /usr/bin/ruby
+# frozen_string_literal: true
+
+def vis_left?(forest, x, y)
+  height = forest[y][x]
+  for i in 0...x do
+    return false if forest[y][i] >= height
+  end
+  true
+end
+
+def vis_right?(forest, x, y)
+  height = forest[y][x]
+  for i in (x+1)...forest[y].length do
+    return false if forest[y][i] >= height
+  end
+  true
+end
+
+def vis_top?(forest, x, y)
+  height = forest[y][x]
+  for i in 0...y do
+    return false if forest[i][x] >= height
+  end
+  true
+end
+
+def vis_bottom?(forest, x, y)
+  height = forest[y][x]
+  for i in (y+1)...forest.length do
+    return false if forest[i][x] >= height
+  end
+  true
+end
+
+def tree_visible?(forest, x, y)
+  vis_left?(forest, x, y) || vis_right?(forest, x, y) || vis_top?(forest, x, y) || vis_bottom?(forest, x, y)
+end
+
+# input = File.read('data/in_example1.txt')
+input = File.read('data/in.txt')
+
+forest = []
+input.split("\n").each do |line|
+  forest.push line.chars.map(&:to_i)
+end
+
+forest.each do |line|
+  # puts line.join
+end
+
+visible_tree_count = 0
+forest.each_with_index do |line, y|
+  line.each_with_index do |_tree, x|
+    visible_tree_count += 1 if tree_visible? forest, x, y
+  end
+end
+sol1 = visible_tree_count
+puts "Solution part 1: #{sol1}"
+
+def scenic_left(forest, x, y)
+  height = forest[y][x]
+  distance = 0
+  for i in (x-1).downto(0) do
+    distance += 1
+    return distance if forest[y][i] >= height
+  end
+  distance
+end
+
+def scenic_right(forest, x, y)
+  height = forest[y][x]
+  distance = 0
+  for i in (x+1).upto(forest[y].length-1) do
+    distance += 1
+    return distance if forest[y][i] >= height
+  end
+  distance
+end
+
+def scenic_top(forest, x, y)
+  height = forest[y][x]
+  distance = 0
+  for i in (y-1).downto(0) do
+    distance += 1
+    return distance if forest[i][x] >= height
+  end
+  distance
+end
+
+def scenic_bottom(forest, x, y)
+  height = forest[y][x]
+  distance = 0
+  for i in (y+1).upto(forest.length-1) do
+    distance += 1
+    return distance if forest[i][x] >= height
+  end
+  distance
+end
+
+def scenic_score(forest, x, y)
+  scenic_left(forest, x, y) * scenic_right(forest, x, y) * scenic_top(forest, x, y) * scenic_bottom(forest, x, y)
+end
+
+scenic_score_max = 0
+forest.each_with_index do |line, y|
+  line.each_with_index do |_tree, x|
+    s = scenic_score forest, x, y
+    scenic_score_max = s if s > scenic_score_max
+  end
+end
+puts "Solution part 2: #{scenic_score_max}"
