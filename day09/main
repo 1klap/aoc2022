@@ -1,0 +1,104 @@
+#! /usr/bin/ruby
+# frozen_string_literal: true
+
+require 'set'
+
+def move_head(head, dir)
+  case dir
+  when 'U'
+    head[:y] += 1
+  when 'R'
+    head[:x] += 1
+  when 'D'
+    head[:y] -= 1
+  when 'L'
+    head[:x] -= 1
+  end
+end
+
+def follow_head(head, tail)
+  dx = head[:x] - tail[:x]
+  dy = head[:y] - tail[:y]
+  tail_delta = case [dx, dy]
+               when [-2, -1], [-2, -2], [-1, -2]
+                 [-1, -1]
+               when [0, -2]
+                 [0, -1]
+               when [1, -2], [2, -2], [2, -1]
+                 [1, -1]
+               when [2, 0]
+                 [1, 0]
+               when [2, 1], [2, 2], [1, 2]
+                 [1, 1]
+               when [0, 2]
+                 [0, 1]
+               when [-1, 2], [-2, 2], [-2, 1]
+                 [-1, 1]
+               when [-2, 0]
+                 [-1, 0]
+               else
+                 [0, 0]
+               end
+  tail[:x] += tail_delta[0]
+  tail[:y] += tail_delta[1]
+  tail
+end
+
+def apply_motion(head, tail, motion, visited)
+  motion.amount.times do
+    move_head head, motion.dir
+    tail = follow_head(head, tail)
+    visited << tail.clone
+  end
+end
+
+Motion = Struct.new :dir, :amount, keyword_init: true
+
+# input = File.read('data/in_example1.txt')
+input = File.read('data/in.txt')
+
+motions = input
+            .split("\n")
+            .map do |line|
+              s = line.split ' '
+              Motion.new dir: s[0], amount: s[1].to_i
+            end
+
+head = { x: 0, y: 0 }
+tail = { x: 0, y: 0 }
+
+visited = Set.new
+visited << tail.clone
+
+motions.each do |motion|
+  apply_motion head, tail, motion, visited
+end
+
+sol1 = visited.size
+puts "Solution part 1: #{sol1}"
+
+##################################
+
+knots = []
+10.times { knots << { x: 0, y: 0 } }
+
+visited = Set.new
+visited << knots[9].clone
+
+def apply_motion_knots(knots, motion, visited)
+  motion.amount.times do
+    move_head knots[0], motion.dir
+    (1..9).each do |knot_index|
+      new_know_pos = follow_head(knots[knot_index-1], knots[knot_index])
+      knots[knot_index] = new_know_pos
+      visited << knots[9].clone if knot_index == 9
+    end
+  end
+end
+
+motions.each do |motion|
+  apply_motion_knots knots, motion, visited
+end
+
+sol2 = visited.size
+puts "Solution part 2: #{sol2}"
