@@ -1,0 +1,124 @@
+#! /usr/bin/ruby
+# frozen_string_literal: true
+
+def contains_instructions?(stack)
+  stack[0].size > 0 || stack[1].size > 0 || stack[2].size > 0
+end
+
+Instruction = Struct.new :cmd, :val, keyword_init: true
+
+# input = File.read('data/in_example1.txt')
+input = File.read('data/in.txt')
+
+instructions = input
+            .split("\n")
+            .map do |line|
+              s = line.split ' '
+              s.size > 1 ? Instruction.new(cmd: s[0], val: s[1].to_i) : Instruction.new(cmd: s[0])
+            end
+
+x = 1
+instruction_stack = {0 => [], 1 => [], 2 => []}
+cycle_count = 1
+signal_strengths = []
+
+while instructions.size > 0
+  unless contains_instructions? instruction_stack
+    # enqueue new instructions
+    inst = instructions.shift
+    case inst.cmd
+    when 'noop'
+      instruction_stack[0] << inst
+    when 'addx'
+      instruction_stack[1] << inst
+    end
+  end
+
+  # evaluate the value
+  if cycle_count == 20 || cycle_count == 60 || cycle_count == 100 || 
+      cycle_count == 140 || cycle_count == 180 || cycle_count == 220
+    puts "#{cycle_count}: #{x}"
+    signal_strengths << cycle_count * x
+  end
+  # process instructions
+  instruction_stack[0].each do |is|
+    case is.cmd
+    when 'noop'
+    when 'addx'
+      x_before = x
+      x += is.val
+      # puts "#{cycle_count}: x #{x_before} => #{x}"
+    end
+  end
+  instruction_stack[0] = instruction_stack[1]
+  instruction_stack[1] = instruction_stack[2]
+  instruction_stack[2] = []
+  cycle_count += 1
+end
+
+sol1 = signal_strengths.sum
+puts "Solution part 1: #{sol1}"
+
+#######################################
+
+instructions = input
+            .split("\n")
+            .map do |line|
+              s = line.split ' '
+              s.size > 1 ? Instruction.new(cmd: s[0], val: s[1].to_i) : Instruction.new(cmd: s[0])
+            end
+
+x = 1
+instruction_stack = {0 => [], 1 => [], 2 => []}
+cycle_count = 0
+cursor_active = []
+
+while instructions.size > 0
+  unless contains_instructions? instruction_stack
+    # enqueue new instructions
+    inst = instructions.shift
+    case inst.cmd
+    when 'noop'
+      instruction_stack[0] << inst
+    when 'addx'
+      instruction_stack[1] << inst
+    end
+  end
+
+  # evaluate the value
+  cursor = cycle_count % 40
+  if cursor == x-1 || cursor == x || cursor == x+1
+    # puts "#{cycle_count}: #{x}"
+    cursor_active << cycle_count
+  end
+
+  # process instructions
+  instruction_stack[0].each do |is|
+    case is.cmd
+    when 'noop'
+    when 'addx'
+      x_before = x
+      x += is.val
+      # puts "#{cycle_count}: x #{x_before} => #{x}"
+    end
+  end
+  instruction_stack[0] = instruction_stack[1]
+  instruction_stack[1] = instruction_stack[2]
+  instruction_stack[2] = []
+  cycle_count += 1
+end
+
+def draw_screen(cursors)
+  (0..5).each do |y|
+    (0..39).each do |x|
+      if cursors.include? y * 40 + x
+        print '#'
+      else
+        print '.'
+      end
+    end
+    puts ''
+  end
+end
+
+draw_screen cursor_active
