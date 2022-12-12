@@ -1,0 +1,137 @@
+#! /usr/bin/ruby
+# frozen_string_literal: true
+
+def simulate_monkey_round(monkeys)
+  monkeys.each do |m|
+    m.items.each do |i|
+      m.inspect_count += 1
+      new_wl = m.op.call i
+      new_wl = (new_wl / 3.0).floor
+      if m.test.call new_wl
+        monkeys[m.monkey_true].items << new_wl
+      else
+        monkeys[m.monkey_false].items << new_wl
+      end
+    end
+    m.items = []
+  end
+end
+
+def simulate_monkey_round_part2(monkeys, common_phase)
+  monkeys.each do |m|
+    m.items.each do |i|
+      m.inspect_count += 1
+      new_wl = m.op.call(i) % common_phase
+      if m.test.call new_wl
+        monkeys[m.monkey_true].items << new_wl
+      else
+        monkeys[m.monkey_false].items << new_wl
+      end
+    end
+    m.items = []
+  end
+end
+
+Monkey = Struct.new :items, :op, :test, :monkey_true, :monkey_false, :inspect_count, keyword_init: true
+
+# input = File.read('data/in_example1.txt')
+# input = File.read('data/in.txt')
+
+monkeys = []
+=begin
+monkeys << Monkey.new(items: [79, 98],
+                      op: proc { |wl| wl * 19 },
+                      test: proc { |wl| wl % 23 == 0 },
+                      monkey_true: 2,
+                      monkey_false: 3,
+                      inspect_count: 0)
+monkeys << Monkey.new(items: [54, 65, 75, 74],
+                      op: proc { |wl| wl + 6 },
+                      test: proc { |wl| wl % 19 == 0 },
+                      monkey_true: 2,
+                      monkey_false: 0,
+                      inspect_count: 0)
+monkeys << Monkey.new(items: [79, 60, 97],
+                      op: proc { |wl| wl * wl },
+                      test: proc { |wl| wl % 13 == 0 },
+                      monkey_true: 1,
+                      monkey_false: 3,
+                      inspect_count: 0)
+monkeys << Monkey.new(items: [74],
+                      op: proc { |wl| wl + 3 },
+                      test: proc { |wl| wl % 17 == 0 },
+                      monkey_true: 0,
+                      monkey_false: 1,
+                      inspect_count: 0)
+=end
+#=begin
+monkeys << Monkey.new(items: [52, 60, 85, 69, 75, 75],
+                      op: proc { |wl| wl * 17 },
+                      test: proc { |wl| wl % 13 == 0 },
+                      monkey_true: 6,
+                      monkey_false: 7,
+                      inspect_count: 0)
+monkeys << Monkey.new(items: [96, 82, 61, 99, 82, 84, 85],
+                      op: proc { |wl| wl + 8 },
+                      test: proc { |wl| wl % 7 == 0 },
+                      monkey_true: 0,
+                      monkey_false: 7,
+                      inspect_count: 0)
+monkeys << Monkey.new(items: [95, 79],
+                      op: proc { |wl| wl + 6 },
+                      test: proc { |wl| wl % 19 == 0 },
+                      monkey_true: 5,
+                      monkey_false: 3,
+                      inspect_count: 0)
+monkeys << Monkey.new(items: [88, 50, 82, 65, 77],
+                      op: proc { |wl| wl * 19 },
+                      test: proc { |wl| wl % 2 == 0 },
+                      monkey_true: 4,
+                      monkey_false: 1,
+                      inspect_count: 0)
+monkeys << Monkey.new(items: [66, 90, 59, 90, 87, 63, 53, 88],
+                      op: proc { |wl| wl + 7 },
+                      test: proc { |wl| wl % 5 == 0 },
+                      monkey_true: 1,
+                      monkey_false: 0,
+                      inspect_count: 0)
+monkeys << Monkey.new(items: [92, 75, 62],
+                      op: proc { |wl| wl * wl },
+                      test: proc { |wl| wl % 3 == 0 },
+                      monkey_true: 3,
+                      monkey_false: 4,
+                      inspect_count: 0)
+monkeys << Monkey.new(items: [94, 86, 76, 67],
+                      op: proc { |wl| wl + 1 },
+                      test: proc { |wl| wl % 11 == 0 },
+                      monkey_true: 5,
+                      monkey_false: 2,
+                      inspect_count: 0)
+monkeys << Monkey.new(items: [57],
+                      op: proc { |wl| wl + 2 },
+                      test: proc { |wl| wl % 17 == 0 },
+                      monkey_true: 6,
+                      monkey_false: 2,
+                      inspect_count: 0)
+#=end
+20.times do
+  # monkeys = simulate_monkey_round monkeys
+end
+
+monkey_business = monkeys.map(&:inspect_count).sort.reverse.take(2).reduce(&:*)
+monkey_business = "Uncomment line 4 higher"
+
+puts "solution part 1: #{monkey_business}"
+
+####################################
+
+# common_phase = 23 * 19 * 13 * 17
+common_phase = 13 * 7 * 19 * 2 * 5 * 3 * 11 * 17
+
+10_000.times do
+  monkeys = simulate_monkey_round_part2 monkeys, common_phase
+end
+
+monkey_business = monkeys.map(&:inspect_count).sort.reverse.take(2).reduce(&:*)
+
+puts "solution part 1: #{monkey_business}"
