@@ -1,0 +1,100 @@
+#! /usr/bin/ruby
+# frozen_string_literal: true
+
+require 'set'
+
+def nodes_around(node, nodes)
+  r = []
+  r << nodes[node.y][node.x - 1] if node.x > 0
+  r << nodes[node.y][node.x + 1] if node.x < nodes[0].length - 1
+  r << nodes[node.y - 1][node.x] if node.y > 0
+  r << nodes[node.y + 1][node.x] if node.y < nodes.length - 1
+  # r.select { |n| n.height.bytes.first == node.height.bytes.first + 1 }
+  r
+end
+
+#def one_step_higher(node, nodes)
+#  nodes.select { |n| n.height.bytes.first == node.height.bytes.first + 1 }
+#end
+
+Node = Struct.new :height, :cost, :x, :y, keyword_init: true
+
+# input = File.read('data/in_example1.txt')
+input = File.read('data/in.txt')
+
+nodes = []
+
+input.split("\n")
+  .each_with_index do |line, y|
+    nodes[y] = []
+    line.chars.each_with_index do |char, x|
+      nodes[y].push Node.new height: char, cost: 100_000, x: x, y: y
+    end
+  end
+
+# puts nodes.count
+# puts nodes[0].count
+
+start_node = nodes.flatten.select { |n| n.height == "S" }.first
+end_node = nodes.flatten.select { |n| n.height == "E" }.first
+
+start_node.cost = 0
+# puts start_node
+# puts end_node
+
+fringe = {} # Set.new 
+#fringe << start_node
+
+next_nodes = nodes_around start_node, nodes
+next_nodes = next_nodes.select { |n| n.height == 'a' }
+next_nodes.each { |n| n.cost = 1 }
+next_nodes.each do |n|
+  # fringe << n
+  fringe["#{n.x}##{n.y}"] = n
+end
+
+
+while fringe.size > 0
+  # puts "fringe size: #{fringe.size}"
+  # puts fringe
+  # candidate = fringe.first
+  # fringe.delete candidate
+  _, candidate = fringe.shift
+  next_nodes = nodes_around candidate, nodes
+  next_nodes = next_nodes.select do |n| 
+    diff_height = n.height.bytes.first - candidate.height.bytes.first
+    # diff_height = 1 if n.height == 'a' && candidate.height == 'S'
+    # diff_height = 1 if n.height == 'S' && candidate.height == 'a'
+    (n.height != 'E' && (diff_height < 2)) || 
+      (n.height == 'E' && candidate.height == 'z')
+  end
+  next_nodes = next_nodes.select { |n| n.cost >= candidate.cost }
+  next_nodes.each do |n| 
+    if (n.cost > candidate.cost + 1)
+      # puts "updating cost of node #{n} before=#{n.cost} after=#{candidate.cost + 1}"
+      n.cost = candidate.cost + 1 
+    end
+  end
+  next_nodes.each do |n|
+    # fringe << n
+    fringe["#{n.x}##{n.y}"] = n
+  end
+end
+
+#puts "x>#{(nodes[0].length) /2}"
+#puts "y>#{nodes.length/4} y<#{nodes.length* 3/4}"
+nodes.each_with_index do |ys, y|
+  #if y > (nodes.length/4) && y < (nodes.length * 3/4)
+    ys.each_with_index do |n, x|
+      if (x > ((nodes[0].length) /2)) 
+        pp = n.cost.to_s.rjust 4
+        pp = "   X" if n.height == "E"
+        print pp
+      end
+    end
+    print "\n"
+  #end
+end
+
+puts "Start: #{start_node}"
+puts "Solution part1: #{end_node}"
